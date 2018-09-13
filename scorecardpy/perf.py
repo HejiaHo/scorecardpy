@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 
 import numpy as np
 import pandas as pd
@@ -30,7 +31,7 @@ def eva_dfkslift(df, groupnum=None):
     df_kslift=pd.concat([
       pd.DataFrame({'group':0, 'good':0, 'bad':0, 'good_distri':0, 'bad_distri':0, 'badrate':0, 'cumbadrate':np.nan, 'cumgood':0, 'cumbad':0, 'ks':0, 'lift':np.nan}, index=np.arange(1)),
       df_kslift
-    ], ignore_index=True)
+    ], sort=False, ignore_index=True)
     # return
     return df_kslift
 # plot ks    
@@ -491,7 +492,7 @@ def perf_psi(score, label=None, title=None, x_limits=None, x_tick_break=50, show
             # breakpoints
             if x_limits is None:
                 x_limits = dat[sn].quantile([0.02, 0.98])
-                x_limits = round(x_limits/x_tick_break)*x_tick_break
+                x_limits = (x_limits/x_tick_break).round()*x_tick_break
                 x_limits = list(x_limits)
         
             brkp = np.unique([np.floor(min(dt_sl[sn])/x_tick_break)*x_tick_break]+\

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 
 import numpy as np
 import pandas as pd
@@ -11,6 +12,19 @@ import matplotlib.pyplot as plt
 import time
 from .condition_fun import *
 from .info_value import *
+
+
+def woepoints_ply1_func(args):
+    """
+    python2 没有starmap
+    :param args:
+    :return:
+    """
+    return woepoints_ply1(args[0], args[1], args[2], args[3])
+
+
+def woebin2_func(args):
+    return woebin2(args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7])
 
 # converting vector (breaks & special_values) to dataframe
 def split_vec_todf(vec):
@@ -383,7 +397,8 @@ def woebin2_tree_add_1brkp(dtm, initial_binning, min_perc_coarse_bin, bestbreaks
             # best break + i
             bestbreaks_i = [float('-inf')]+sorted(bestbreaks+[i] if bestbreaks is not None else [i])+[float('inf')]
             # best break datatable
-            labels = ['[{},{})'.format(bestbreaks_i[i], bestbreaks_i[i+1]) for i in range(len(bestbreaks_i)-1)]
+            # python 2 时，i被干扰了（按理说这里的i应该为局部变量，不应该受干扰）
+            labels = ['[{},{})'.format(bestbreaks_i[j], bestbreaks_i[j+1]) for j in range(len(bestbreaks_i)-1)]
             init_bin_all_breaks.loc[:,'bstbin'+str(i)] = pd.cut(init_bin_all_breaks['brkp'], bestbreaks_i, right=False, labels=labels)#.astype(str)
         # best break dt
         total_iv_all_brks = pd.melt(
@@ -853,7 +868,7 @@ def woebin(dt, y, x=None, breaks_list=None, special_values=None,
             # print(x_i)
             # print xs
             if print_step>0 and bool((i+1)%print_step): 
-                print(('{:'+str(len(str(xs_len)))+'.0f}/{} {}').format(i, xs_len, x_i), flush=True)
+                print(('{:'+str(len(str(xs_len)))+'.0f}/{} {}').format(i, xs_len, x_i))
             # woebining on one variable
             bins[x_i] = woebin2(
               dtm = pd.DataFrame({'y':dt[y], 'variable':x_i, 'value':dt[x_i]}),
@@ -878,7 +893,7 @@ def woebin(dt, y, x=None, breaks_list=None, special_values=None,
           [stop_limit]*xs_len, [max_num_bin]*xs_len, [method]*xs_len
         )
         # bins in dictionary
-        bins = dict(zip(xs, pool.starmap(woebin2, args)))
+        bins = dict(zip(xs, pool.map(woebin2_func, args)))
         pool.close()
     
     # runingtime
@@ -904,7 +919,7 @@ def woepoints_ply1(dtx, binx, x_i, woe_points):
     
     '''
     # woe_points: "woe" "points"
-    # binx = bins.loc[lambda x: x.variable == x_i] 
+    # binx = bins.loc[lambda x: x.variable == x_i]
     binx = pd.merge(
       pd.DataFrame(binx['bin'].str.split('%,%').tolist(), index=binx['bin'])\
         .stack().reset_index().drop('level_1', axis=1),
@@ -1028,7 +1043,7 @@ def woebin_ply(dt, bins, no_cores=None, print_step=0):
             # print xs
             # print(x_i)
             if print_step>0 and bool((i+1) % print_step): 
-                print(('{:'+str(len(str(xs_len)))+'.0f}/{} {}').format(i, xs_len, x_i), flush=True)
+                print(('{:'+str(len(str(xs_len)))+'.0f}/{} {}').format(i, xs_len, x_i))
             #
             binx = bins[bins['variable'] == x_i].reset_index()
                  # bins.loc[lambda x: x.variable == x_i] 
@@ -1046,7 +1061,7 @@ def woebin_ply(dt, bins, no_cores=None, print_step=0):
           ["woe"]*xs_len
         )
         # bins in dictionary
-        dat_suffix = pool.starmap(woepoints_ply1, args)
+        dat_suffix = pool.map(woepoints_ply1_func, args)
         dat = pd.concat([dat]+dat_suffix, axis=1)
         pool.close()
     # runingtime
@@ -1157,8 +1172,8 @@ def woebin_plot(bins, x=None, title=None, show_iv=True):
     
     # # save binning plot
     # for key,i in plotlist.items():
-    #     plt.show(i)
-    #     plt.savefig(str(key)+'.png')
+    #     i.show()
+    #     i.savefig(save_path + str(key)+'.png')
     '''
     xs = x
     # bins concat 

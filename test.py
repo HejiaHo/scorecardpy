@@ -14,7 +14,7 @@ if __name__ == '__main__':
     # load germancredit data
     dat = sc.germancredit()
     # filter variable via missing rate, iv, identical value rate
-    dt_s = sc.var_filter(dat, y="creditability", iv_limit=0)
+    dt_s = sc.var_filter(dat, y="creditability")
 
     # breaking dt into train and test
     train, test = sc.split_df(dt_s, 'creditability').values()

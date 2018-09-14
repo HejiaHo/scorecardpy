@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 
 import pandas as pd
+import numpy as np
 import re
 from .condition_fun import *
 from .woebin import woepoints_ply1
@@ -27,8 +29,12 @@ def ab(points0=600, odds0=1/60, pdo=50):
     # two hypothesis
     # points0 = a - b*log(odds0)
     # points0 - PDO = a - b*log(2*odds0)
-    b = pdo/np.log(2)
+    if pdo > 0:
+        b = pdo/np.log(2)
+    else:
+        b = -pdo/np.log(2)
     a = points0 + b*np.log(odds0) #log(odds0/(1+odds0))
+    
     return {'a':a, 'b':b}
 
 
@@ -96,7 +102,8 @@ def scorecard(bins, model, xcolumns, points0=600, odds0=1/19, pdo=50, basepoints
     
     # coefficients
     aabb = ab(points0, odds0, pdo)
-    a, b = aabb.values()
+    a = aabb['a'] 
+    b = aabb['b']
     # odds = pred/(1-pred); score = a - b*log(odds)
     
     # bins # if (is.list(bins)) rbindlist(bins)
@@ -115,14 +122,12 @@ def scorecard(bins, model, xcolumns, points0=600, odds0=1/19, pdo=50, basepoints
         card['basepoints'] = pd.DataFrame({'variable':"basepoints", 'bin':np.nan, 'points':0}, index=np.arange(1))
         for i in coef_df.index:
             card[i] = bins.loc[bins['variable']==i,['variable', 'bin', 'woe']]\
-              .assign(points = lambda x: round(-b*x['woe']*coef_df[i] + basepoints/len_x))\
-              [["variable", "bin", "points"]]
+              .assign(points = lambda x: (-b*x['woe']*coef_df[i] + basepoints/len_x).round()).drop('woe', axis=1)
     else:
         card['basepoints'] = pd.DataFrame({'variable':"basepoints", 'bin':np.nan, 'points':round(basepoints)}, index=np.arange(1))
         for i in coef_df.index:
-            card[i] = bins.loc[bins['variable']==i,['variable', 'bin', 'woe']]\
-              .assign(points = lambda x: round(-b*x['woe']*coef_df[i]))\
-              [["variable", "bin", "points"]]
+            card[i] = bins.loc[bins['variable'] == i, ['variable', 'bin', 'woe']]\
+                .assign(points= lambda x: (-b*x['woe']*coef_df[i]).round()).drop('woe', axis=1)
     return card
 
 
@@ -198,7 +203,7 @@ def scorecard_ply(dt, card, only_total_score=True, print_step=0):
     print_step = check_print_step(print_step)
     # card # if (is.list(card)) rbindlist(card)
     if isinstance(card, dict):
-        card_df = pd.concat(card, ignore_index=True)
+        card_df = pd.concat(card, sort=False, ignore_index=True)
     # x variables
     xs = card_df.loc[card_df.variable != 'basepoints', 'variable'].unique()
     # length of x variables

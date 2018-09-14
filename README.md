@@ -1,6 +1,6 @@
 # scorecardpy
 
-> 该版本为Python 2
+> 该版本为支持Python 2，对谢博士的包进行修改，原Python 3版本请看 [scorecardpy](https://github.com/ShichenXie/scorecard)
 
 [![PyPI release](https://img.shields.io/pypi/v/scorecardpy.svg)](https://pypi.python.org/pypi/scorecardpy)
 [![Downloads](http://pepy.tech/badge/scorecardpy)](http://pepy.tech/project/scorecardpy)
@@ -17,14 +17,14 @@ Its goal is to make the development of traditional credit risk scorecard model e
 
 ## Installation
 
-- Install the release version of `scorecardpy` from [PYPI](https://pypi.org/project/scorecardpy/) with:
+Download and nstall the release version of `scorecardpy` from Package with:
 ```
-pip install scorecardpy
+pip install scorecardpy-0.1.6.4.tar.gzi
 ```
 
-- Install the latest version of `scorecardpy` from [github](https://github.com/shichenxie/scorecardpy) with:
+- Install the latest version of `scorecardpy` from [github](https://github.com/HejiaHo/scorecardpy) with:
 ```
-pip install git+git://github.com/shichenxie/scorecardpy.git
+pip install git+git://github.com/HejiaHo/scorecardpy.git
 ```
 
 ## Example
@@ -32,6 +32,7 @@ pip install git+git://github.com/shichenxie/scorecardpy.git
 This is a basic example which shows you how to develop a common credit risk scorecard:
 
 ``` python
+See test.py
 # Traditional Credit Scoring Using Logistic Regression
 import scorecardpy as sc
 

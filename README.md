@@ -32,7 +32,7 @@ pip install git+git://github.com/HejiaHo/scorecardpy.git
 This is a basic example which shows you how to develop a common credit risk scorecard:
 
 ``` python
-See test.py
+# See test.py
 # Traditional Credit Scoring Using Logistic Regression
 import scorecardpy as sc
 

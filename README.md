@@ -1,13 +1,13 @@
 # scorecardpy
 
-> 该版本为支持Python 2，对谢博士的包进行修改，原Python 3版本请看 [scorecardpy](https://github.com/ShichenXie/scorecard)
+> 该版本为支持Python 2，对谢博士的包进行修改，原Python 3版本请看 [scorecardpy](https://github.com/ShichenXie/scorecardpy)
 
 [![PyPI release](https://img.shields.io/pypi/v/scorecardpy.svg)](https://pypi.python.org/pypi/scorecardpy)
 [![Downloads](http://pepy.tech/badge/scorecardpy)](http://pepy.tech/project/scorecardpy)
 [![PyPI version](https://img.shields.io/pypi/pyversions/scorecardpy.svg)](https://pypi.python.org/pypi/scorecardpy)
 
 
-This package is python version of R package [scorecard](https://github.com/ShichenXie/scorecardpy). 
+This package is python version of R package [scorecard](https://github.com/ShichenXie/scorecard). 
 Its goal is to make the development of traditional credit risk scorecard model easier and efficient by providing functions for some common tasks. 
 - data partition (`split_df`)
 - variable selection (`iv`, `var_filter`)

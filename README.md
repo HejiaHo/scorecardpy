@@ -7,7 +7,7 @@
 [![PyPI version](https://img.shields.io/pypi/pyversions/scorecardpy.svg)](https://pypi.python.org/pypi/scorecardpy)
 
 
-This package is python version of R package [scorecard](https://github.com/ShichenXie/scorecard). 
+This package is python version of R package [scorecard](https://github.com/ShichenXie/scorecardpy). 
 Its goal is to make the development of traditional credit risk scorecard model easier and efficient by providing functions for some common tasks. 
 - data partition (`split_df`)
 - variable selection (`iv`, `var_filter`)

@@ -8,32 +8,39 @@ from pandas.api.types import is_numeric_dtype
 
 # remove date time columns # rm_datetime_col
 # remove columns if len(x.unique()) == 1
-def rmcol_datetime_unique1(dat): # add more datatime types later
-    # character columns with too many unique values
-    char_cols = [i for i in list(dat) if not is_numeric_dtype(dat[i])]
-    char_cols_too_many_unique = [i for i in char_cols if len(dat[i].unique()) >= 50]
+def rmcol_datetime_unique1(dat, check_char_num=False):  # add more datatime types later
+    if check_char_num:
+        # character columns with too many unique values
+        char_cols = [i for i in list(dat) if not is_numeric_dtype(dat[i])]
+        char_cols_too_many_unique = [i for i in char_cols if len(dat[i].unique()) >= 50]
 
-    if len(char_cols_too_many_unique) > 0:
-        print('>>> There are {} variables have too many unique non-numberic values, which might cause the binning process slow. Please double check the following variables: \n{}'.format(len(char_cols_too_many_unique), ', '.join(char_cols_too_many_unique)))
-        print('>>> Continue the binning process?')
-        print('1: yes \n2: no \n')
-        cont = int(input("Selection: "))
-        while cont not in [1, 2]:
+        if len(char_cols_too_many_unique) > 0:
+            print('>>> There are {} variables have too many unique non-numberic values, '
+                  'which might cause the binning process slow. '
+                  'Please double check the following variables: \n{}'
+                .format(len(char_cols_too_many_unique), ', '.join(char_cols_too_many_unique)))
+            print('>>> Continue the binning process?')
+            print('1: yes \n2: no \n')
             cont = int(input("Selection: "))
-        if cont == 2:
-            raise SystemExit(0)
+            while cont not in [1, 2]:
+                cont = int(input("Selection: "))
+            if cont == 2:
+                raise SystemExit(0)
 
-    # remove only 1 unique vlaues variable 
-    unique1_cols = [i for i in list(dat) if len(dat[i].unique())==1]
+    # remove only 1 unique vlaues variable
+    unique1_cols = [i for i in list(dat) if len(dat[i].unique()) == 1]
     if len(unique1_cols) > 0:
-        warnings.warn("There are {} columns have only one unique values, which are removed from input dataset. \n (ColumnNames: {})".format(len(unique1_cols), ', '.join(unique1_cols)))
-        dat=dat.drop(unique1_cols, axis=1)
-    
+        warnings.warn(
+            "There are {} columns have only one unique values, which are removed from input dataset. "
+            "\n (ColumnNames: {})".format(len(unique1_cols), ', '.join(unique1_cols)))
+        dat = dat.drop(unique1_cols, axis=1)
+
     # remove date time variable
     datetime_cols = dat.dtypes[dat.dtypes == 'datetime64[ns]'].index.tolist()
     if len(datetime_cols) > 0:
-        warnings.warn("There are {} date/time type columns are removed from input dataset. \n (ColumnNames: {})".format(len(datetime_cols), ', '.join(datetime_cols)))
-        dat=dat.drop(datetime_cols, axis=1)
+        warnings.warn("There are {} date/time type columns are removed from input dataset. "
+                      "\n (ColumnNames: {})".format(len(datetime_cols), ', '.join(datetime_cols)))
+        dat = dat.drop(datetime_cols, axis=1)
     # return dat
     return dat
 
@@ -42,6 +49,11 @@ def rmcol_datetime_unique1(dat): # add more datatime types later
 #' @import data.table
 #'
 def rep_blank_na(dat): # cant replace blank string in categorical value with nan
+    # remove duplicated index
+    if dat.index.duplicated().any():
+        dat = dat.reset_index()
+        warnings.warn('There are duplicated index in dataset. The index has been reseted.')
+
     blank_cols = [index for index, x in dat.isin(['', ' ']).sum().iteritems() if x > 0]
     if len(blank_cols) > 0:
         warnings.warn('There are blank strings in {} columns, which are replaced with NaN. \n (ColumnNames: {})'.format(len(blank_cols), ', '.join(blank_cols)))
@@ -77,14 +89,20 @@ def check_y(dat, y, positive):
         warnings.warn("There are NaNs in \'{}\' column. The rows with NaN in \'{}\' were removed from dat.".format(y,y))
         dat = dat.dropna(subset=[y])
         # dat = dat[pd.notna(dat[y])]
-    
+
+    # numeric y to int
+    if is_numeric_dtype(dat[y]):
+        dat.loc[:, y] = dat[y].apply(lambda x: x if pd.isnull(x) else int(x))  # dat[y].astype(int)
     # length of unique values in y
     unique_y = np.unique(dat[y].values)
     if len(unique_y) == 2:
         if [v not in [0,1] for v in unique_y] == [True, True]:
             if True in [bool(re.search(positive, str(v))) for v in unique_y]:
-                warnings.warn("The positive value in \"{}\" was replaced by 1 and negative value by 0.".format(y))
-                dat[y] = dat[y].apply(lambda x: 1 if str(x) in re.split('\|', positive) else 0)
+                y1 = dat[y]
+                y2 = dat[y].apply(lambda x: 1 if str(x) in re.split('\|', positive) else 0)
+                if (y1 != y2).any():
+                    dat.loc[:, y] = y2  # dat[y] = y2
+                    warnings.warn("The positive value in \"{}\" was replaced by 1 and negative value by 0.".format(y))
             else:
                 raise Exception("Incorrect inputs; the positive value in \"{}\" is not specified".format(y))
     else:
@@ -105,7 +123,9 @@ def check_print_step(print_step):
 
 # x variable
 def x_variable(dat, y, x):
-    x_all = set(list(dat)).difference(set([y]))
+    if isinstance(y, str):
+        y = [y]
+    x_all = list(set(dat.columns) - set(y))
     
     if x is None:
         x = x_all
